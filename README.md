@@ -31,8 +31,8 @@ combined into one interactive report with an honest uncertainty band, plus a
 |---|---|---|
 | Section 508 (2017 refresh) | WCAG 2.0 A + AA (incorporated by reference) | access-board.gov/ict |
 | 21st Century IDEA Act | via Section 508 → WCAG 2.0 AA | congress.gov (H.R.5759, 115th) |
-| ADA Title II final rule (DOJ 2024) | WCAG 2.1 AA for state/local gov; 2026 IFR extended compliance dates | Federal Register 2024-07758 |
-| OMB M-24-14 | no separate baseline; accessibility required via 508 | whitehouse.gov/omb |
+| ADA Title II final rule (DOJ 2024) | WCAG 2.1 AA for state/local gov; 2026 IFR extended compliance dates (2027/2028); binds state/local, not federal sites | Federal Register 2024-07758 |
+| OMB M-24-08 | no separate baseline; accessibility required via 508 + accessibility statements & manual testing | bidenwhitehouse.archives.gov/omb |
 
 ## Run it
 

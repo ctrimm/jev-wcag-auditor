@@ -139,11 +139,11 @@ export const LAWS: Law[] = [
     description: "Requires federal websites to be accessible, consistent, and mobile-friendly — pointing back to Section 508 compliance.",
     baseline: { version: "2.0", level: "AA" }, url: "https://www.congress.gov/bill/115th-congress/house-bill/5759" },
   { id: "ada-title-ii", name: "ADA Title II final rule (DOJ, 2024)", short: "ADA Title II",
-    description: "State and local government web content and mobile apps must meet WCAG 2.1 AA. Note: a 2026 interim final rule extended the compliance dates; DOJ has signaled the rule itself may be revisited.",
+    description: "State and local government web content and mobile apps must meet WCAG 2.1 AA. An April 2026 interim final rule extended compliance dates to Apr 2027 (populations of 50,000+) and Apr 2028 (smaller entities); DOJ has signaled the rule itself may be revisited. Jurisdiction note: binds state/local governments, not federal .gov sites (those fall under Section 508).",
     baseline: { version: "2.1", level: "AA" }, url: "https://www.federalregister.gov/d/2024-07758" },
-  { id: "m-24-14", name: "OMB M-24-14 (Digital Experience Guidance)", short: "OMB M-24-14",
-    description: "OMB guidance on delivering a digital-first public experience; accessibility is a required dimension but the memo sets no separate WCAG baseline beyond 508.",
-    baseline: { version: "2.0", level: "AA" }, url: "https://www.whitehouse.gov/omb/management/ofc-procurement/memorandums/2024/" },
+  { id: "m-24-08", name: "OMB M-24-08 (Section 508 management)", short: "OMB M-24-08",
+    description: "Required federal agencies to strengthen digital-accessibility management: publish accessibility statements with feedback mechanisms and combine automated with manual testing. Sets no new binding WCAG version beyond Section 508. (Digital-first companion memo: M-23-22.)",
+    baseline: { version: "2.0", level: "AA" }, url: "https://bidenwhitehouse.archives.gov/omb/management/ofcio/delivering-a-digital-first-public-experience/" },
 ];
 
 /** axe-core tag filter for a set of WCAG versions. axe-core tags each rule with
@@ -161,8 +161,9 @@ export function axeTagsFor(versions: string[], includeLevelA: boolean): string[]
     if (includeLevelA) tags.add(`wcag${n}a`);
     tags.add(`wcag${n}aa`);
   }
-  // Section 508's older rules overlap wcag2a; include for completeness.
-  if (maxIdx >= 0) tags.add("section508");
+  // Do NOT add the "section508" axe-core tag: it maps to the old pre-2017 §508
+  // rules (§1194.21/22), not the revised (2017) standard, whose requirements
+  // are covered by the wcag2a/wcag2aa tags above.
   return [...tags];
 }
 
