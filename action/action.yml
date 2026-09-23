@@ -1,0 +1,116 @@
+name: "Jev WCAG Auditor"
+description: >-
+  Audit any URL for WCAG accessibility: deterministic axe-core checks in
+  headless Chromium, plus optional Jev adjudication of the judgement calls
+  automation can't decide. Fails the step below a score threshold, publishes
+  a step summary, and comments on PRs.
+author: "Cory Trimm"
+branding:
+  icon: "eye"
+  color: "blue"
+
+inputs:
+  url:
+    description: >-
+      The URL to audit — e.g. a preview deployment URL from Vercel, Netlify,
+      or Cloudflare Pages.
+    required: true
+  wcag-versions:
+    description: "Comma-separated WCAG versions to check: any of 2.0, 2.1, 2.2."
+    default: "2.1"
+  include-level-a:
+    description: "Include Level A criteria (AA always includes A)."
+    default: "true"
+  laws:
+    description: >-
+      Comma-separated law ids whose mapped WCAG baselines are merged in
+      (e.g. '508,ada-title-ii'). Empty means WCAG only.
+    default: ""
+  jev-mode:
+    description: >-
+      'off' = axe-core only (no API key needed); 'judgement' = Jev adjudicates
+      the semantic criteria automation can't fully decide; 'full' = plus Jev
+      second-opinions on serious automated findings.
+    default: "off"
+  typesafe-api-key:
+    description: "TypeSafe API key for Jev. Required when jev-mode is not 'off'."
+    default: ""
+  fail-below:
+    description: >-
+      Fail the step if the pass-rate score (0–100) is below this number.
+      0 disables the gate.
+    default: "0"
+  comment:
+    description: >-
+      Post (or update) a PR comment with the results. Only acts on
+      pull_request events.
+    default: "true"
+  github-token:
+    description: "Token used to post the PR comment."
+    default: ${{ github.token }}
+  upload-artifact:
+    description: "Upload the full machine-readable report JSON as a workflow artifact."
+    default: "true"
+
+outputs:
+  score:
+    description: "Pass-rate score, 0–100."
+  pass:
+    description: "Number of criteria that passed."
+  fail:
+    description: "Number of criteria that failed."
+  needs-review:
+    description: "Number of criteria needing human review."
+  criteria-total:
+    description: "Total criteria checked."
+  report-path:
+    description: "Path to the full wcag-audit-report.json in the workspace."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}/../..
+      run: npm ci
+
+    - name: Install Chromium
+      shell: bash
+      working-directory: ${{ github.action_path }}/../..
+      run: npx playwright install chromium --with-deps
+
+    - name: Run WCAG audit
+      id: audit
+      shell: bash
+      working-directory: ${{ github.action_path }}/../..
+      env:
+        AUDIT_URL: ${{ inputs.url }}
+        AUDIT_WCAG_VERSIONS: ${{ inputs.wcag-versions }}
+        AUDIT_INCLUDE_LEVEL_A: ${{ inputs.include-level-a }}
+        AUDIT_LAWS: ${{ inputs.laws }}
+        AUDIT_JEV_MODE: ${{ inputs.jev-mode }}
+        TYPESAFE_API_KEY: ${{ inputs.typesafe-api-key }}
+        AUDIT_FAIL_BELOW: ${{ inputs.fail-below }}
+        AUDIT_COMMENT: ${{ inputs.comment }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      # Bundle with esbuild (keep-names off): tsx/esbuild's keepNames helper
+      # (__name) breaks Playwright's serialization of the page-evaluate
+      # function. Playwright stays external (native bindings).
+      run: |
+        npx esbuild action/run.ts --bundle --platform=node --format=cjs \
+          --external:playwright --keep-names=false \
+          --outfile=.action-dist/run.cjs
+        node .action-dist/run.cjs
+
+    - name: Upload report JSON
+      if: always() && inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: wcag-audit-report
+        path: wcag-audit-report.json
+        if-no-files-found: warn

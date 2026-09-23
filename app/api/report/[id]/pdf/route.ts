@@ -19,7 +19,7 @@ export async function GET(
     const pdf = await page.pdf({
       format: "Letter",
       printBackground: true,
-      margin: { top: "14mm", bottom: "14mm", left: "12mm", right: "12mm" },
+      margin: { top: "10mm", bottom: "10mm", left: "11mm", right: "11mm" },
     });
     return new NextResponse(Buffer.from(pdf), {
       headers: {

@@ -65,6 +65,20 @@ the public web.
 - Axe rules marked `wcag2a-obsolete` (e.g. duplicate-id under 4.1.1, removed in WCAG 2.2)
   are excluded when auditing against 2.2.
 
+## GitHub Action
+
+Audit any site from CI — `action/` holds a reusable composite action
+(`ctrimm/jev-wcag-auditor/action@v1`) that runs the same pipeline against a
+URL (e.g. a preview deployment), publishes a step summary, comments on the PR,
+uploads the full report JSON, and can fail the build below a score threshold.
+No API key needed for axe-only mode; Jev judgement calls need a
+`TYPESAFE_API_KEY` secret. See [action/README.md](action/README.md).
+
 ## Roadmap
 
-See `future-feature.md` for the planned whole-domain crawl.
+- **Whole-domain crawl** — see `future-feature.md` (parked).
+- **Trend tracking** — re-audit a URL over time; score trajectory + diff of what changed.
+- **Remediation guidance** — Jev suggests the fix per failing criterion, not just the verdict.
+- **Batch URL audit** — paste a list of URLs, get one combined report.
+- **Scheduled monitoring** — re-audit on a cron, alert on regressions.
+- **Visual evidence** — screenshots with failing elements highlighted in the report.

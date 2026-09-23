@@ -3,11 +3,16 @@
  * In this sandbox, outbound traffic must go through the local CONNECT
  * forwarder (127.0.0.1:18080) that injects Proxy-Authorization; direct
  * egress fails. In production (no forwarder listening) we go direct.
+ *
+ * The sandbox also has its own Chrome build; elsewhere (e.g. the GitHub
+ * Action) we fall back to Playwright's bundled Chromium — override the
+ * path with AUDIT_CHROME_PATH.
  */
+import fs from "node:fs";
 import net from "node:net";
 import { chromium, type Browser } from "playwright";
 
-const CHROME = "/home/hatch/workspace/tooling/chrome-linux64/chrome";
+const CHROME = process.env.AUDIT_CHROME_PATH || "/home/hatch/workspace/tooling/chrome-linux64/chrome";
 const PROXY = "http://127.0.0.1:18080";
 
 function proxyListening(): Promise<boolean> {
@@ -23,10 +28,11 @@ export async function launchAuditBrowser(): Promise<Browser> {
   const useProxy = await proxyListening();
   const args = ["--no-sandbox", "--disable-dev-shm-usage"];
   if (useProxy) args.push(`--proxy-server=${PROXY}`, "--ignore-certificate-errors");
-  return chromium.launch({
-    executablePath: CHROME,
-    args,
-  });
+  const opts: Parameters<typeof chromium.launch>[0] = { args };
+  // Sandbox Chrome when present; otherwise Playwright's bundled Chromium
+  // (the GitHub Action installs it via `playwright install chromium`).
+  if (CHROME && fs.existsSync(CHROME)) opts.executablePath = CHROME;
+  return chromium.launch(opts);
 }
 
 /** Ensure the local proxy forwarder is running (sandbox only). No-op when
