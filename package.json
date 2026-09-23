@@ -1,0 +1,25 @@
+{
+  "name": "jev-wcag-auditor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WCAG compliance auditor for .gov sites: deterministic axe-core checks plus Jev adjudication of judgement calls, with confidence-scored interactive and PDF reports.",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start"
+  },
+  "dependencies": {
+    "axe-core": "^4.10.0",
+    "next": "^15.5.4",
+    "playwright": "^1.55.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0"
+  }
+}
