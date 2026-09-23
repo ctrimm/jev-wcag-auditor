@@ -5,3 +5,4 @@ data/reports/*.json
 !data/reports/.gitkeep
 *.log
 .env
+*.tsbuildinfo
