@@ -25,6 +25,14 @@ combined into one interactive report with an honest uncertainty band, plus a
    Aggregate score with an uncertainty band: the low end assumes every "needs review"
    item fails, the high end assumes they all pass.
 
+## Screenshots
+
+![Audit form](screenshots/home.png)
+
+![Interactive report for usa.gov](screenshots/report.png)
+
+![One-page PDF / print view](screenshots/print.png)
+
 ## Legal references
 
 | Law | Baseline | Source |
