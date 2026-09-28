@@ -94,6 +94,9 @@ export async function auditPage(url: string, tags: string[]): Promise<PageAudit>
       userAgent:
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
       viewport: { width: 1366, height: 900 },
+      // axe-core is injected as an inline script; sites with a strict
+      // Content-Security-Policy (no 'unsafe-inline') would otherwise block it.
+      bypassCSP: true,
     });
     page.setDefaultTimeout(90000);
     page.setDefaultNavigationTimeout(60000);

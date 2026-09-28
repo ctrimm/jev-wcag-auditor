@@ -21,7 +21,7 @@ on: [pull_request]
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -36,8 +36,13 @@ jobs:
 ```
 
 No API key is needed for the default `jev-mode: "off"` (axe-core only).
-The action installs Node 22, your repo's locked dependencies (`npm ci`),
-and Playwright's Chromium itself.
+The action installs Node 22, the auditor's own locked dependencies (`npm ci`
+in the action's checkout, not your repo), and Playwright's Chromium itself.
+
+Run it on a pinned Ubuntu runner such as `ubuntu-24.04` rather than
+`ubuntu-latest`. `playwright install --with-deps` installs Chromium's system
+packages with apt and only supports specific Ubuntu releases, so a new
+`ubuntu-latest` image can break the install before Playwright catches up.
 
 ## With Jev judgement calls
 
@@ -68,6 +73,7 @@ sensory-only instructions, page language) — the same six questions as the app.
 | `fail-below` | `"0"` | Fail the step if the score (0–100) is below this. `0` disables. |
 | `comment` | `"true"` | Post/update a PR comment with results (`pull_request` events only). The comment is updated in place, one per PR. |
 | `github-token` | `${{ github.token }}` | Token for the PR comment. |
+| `summary` | `"true"` | Write results to the step summary. Set `"false"` when a matrix runs many audits and you publish a combined summary. |
 | `upload-artifact` | `"true"` | Upload `wcag-audit-report.json` as a workflow artifact. |
 
 ## Outputs

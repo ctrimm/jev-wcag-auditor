@@ -193,7 +193,7 @@ async function main() {
     `\n<details><summary>Honesty notes</summary>\n\nAutomated checks catch roughly a third of real accessibility barriers. ` +
     `“Needs review” items need a human, ideally testing with assistive technology. ` +
     `Full machine-readable report: \`wcag-audit-report.json\` artifact.\n</details>\n`;
-  appendSummary(summary);
+  if (env("AUDIT_SUMMARY", "true").toLowerCase() === "true") appendSummary(summary);
 
   if (env("AUDIT_COMMENT", "true").toLowerCase() === "true" && env("GITHUB_EVENT_NAME") === "pull_request") {
     await upsertPrComment(summary);

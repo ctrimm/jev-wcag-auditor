@@ -48,6 +48,11 @@ inputs:
   github-token:
     description: "Token used to post the PR comment."
     default: ${{ github.token }}
+  summary:
+    description: >-
+      Write the results to the job's step summary. Turn off when a matrix
+      runs many audits and you publish your own combined summary.
+    default: "true"
   upload-artifact:
     description: "Upload the full machine-readable report JSON as a workflow artifact."
     default: "true"
@@ -55,39 +60,47 @@ inputs:
 outputs:
   score:
     description: "Pass-rate score, 0–100."
+    value: ${{ steps.audit.outputs.score }}
   pass:
     description: "Number of criteria that passed."
+    value: ${{ steps.audit.outputs.pass }}
   fail:
     description: "Number of criteria that failed."
+    value: ${{ steps.audit.outputs.fail }}
   needs-review:
     description: "Number of criteria needing human review."
+    value: ${{ steps.audit.outputs.needs-review }}
   criteria-total:
     description: "Total criteria checked."
+    value: ${{ steps.audit.outputs.criteria-total }}
   report-path:
     description: "Path to the full wcag-audit-report.json in the workspace."
+    value: ${{ steps.audit.outputs.report-path }}
 
 runs:
   using: "composite"
   steps:
+    # github.action_path is <repo-root>/action, so ".." is the auditor repo
+    # root (package.json, lib/, node_modules). Not the caller's workspace.
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version: 22
 
     - name: Install dependencies
       shell: bash
-      working-directory: ${{ github.action_path }}/../..
+      working-directory: ${{ github.action_path }}/..
       run: npm ci
 
     - name: Install Chromium
       shell: bash
-      working-directory: ${{ github.action_path }}/../..
+      working-directory: ${{ github.action_path }}/..
       run: npx playwright install chromium --with-deps
 
     - name: Run WCAG audit
       id: audit
       shell: bash
-      working-directory: ${{ github.action_path }}/../..
+      working-directory: ${{ github.action_path }}/..
       env:
         AUDIT_URL: ${{ inputs.url }}
         AUDIT_WCAG_VERSIONS: ${{ inputs.wcag-versions }}
@@ -97,6 +110,7 @@ runs:
         TYPESAFE_API_KEY: ${{ inputs.typesafe-api-key }}
         AUDIT_FAIL_BELOW: ${{ inputs.fail-below }}
         AUDIT_COMMENT: ${{ inputs.comment }}
+        AUDIT_SUMMARY: ${{ inputs.summary }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
       # Bundle with esbuild (keep-names off): tsx/esbuild's keepNames helper
       # (__name) breaks Playwright's serialization of the page-evaluate
@@ -109,7 +123,7 @@ runs:
 
     - name: Upload report JSON
       if: always() && inputs.upload-artifact == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: wcag-audit-report
         path: wcag-audit-report.json
